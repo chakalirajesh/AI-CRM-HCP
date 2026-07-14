@@ -7,21 +7,15 @@ router = APIRouter(
     tags=["AI"],
 )
 
+
 @router.post("/chat")
 def chat(request: ChatRequest):
-    try:
-        result = run_agent(request.message)
+    from app.langgraph.tools import generate_followup_ai
 
-        print("AI RESULT:", result)
-        print("TYPE:", type(result))
+    result = generate_followup_ai(request.message)
 
-        return {
-            "response": str(result)
-        }
+    print("RESULT =", result)
 
-    except Exception as e:
-        print(e)
-        return {
-            "response": "AI service is temporarily unavailable.",
-            "error": str(e)
-        }
+    return {
+        "response": result
+    }

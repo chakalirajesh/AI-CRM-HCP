@@ -40,6 +40,7 @@ def get_hcp(
 ):
 
     return HCPService.get_hcp_by_id(db, hcp_id)
+
 @router.put("/{hcp_id}")
 def update_hcp(
     hcp_id: int,

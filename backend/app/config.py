@@ -17,7 +17,7 @@ class Settings:
     DB_PASSWORD = os.getenv("DB_PASSWORD")
 
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-    MODEL_NAME = os.getenv("MODEL_NAME")
+    MODEL_NAME = os.getenv("MODEL_NAME", "gemma2-9b-it")
 
 
 settings = Settings()

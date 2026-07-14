@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   Box,
   Typography,
@@ -14,7 +15,37 @@ import AddIcon from "@mui/icons-material/PersonAdd";
 import ForumIcon from "@mui/icons-material/Forum";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
+import api from "../services/api";
+
+import { useDispatch } from "react-redux";
+import { setDashboardData } from "../redux/dashboardSlice";
+
 function Dashboard() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    loadDashboard();
+  }, []);
+
+  const loadDashboard = async () => {
+    try {
+      const hcpResponse = await api.get("/hcp/");
+      const interactionResponse = await api.get("/interaction/");
+
+      console.log("HCP Response:", hcpResponse.data);
+      console.log("Interaction Response:", interactionResponse.data);
+
+      dispatch(
+        setDashboardData({
+          totalHCPs: hcpResponse.data.length,
+          totalInteractions: interactionResponse.data.length,
+        }),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       {/* Header */}

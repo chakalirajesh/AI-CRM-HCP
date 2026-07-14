@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+import { setPrompt, setResponse, setLoading } from "../redux/aiSlice";
 import api from "../services/api";
 
 import {
@@ -16,31 +18,32 @@ import PersonIcon from "@mui/icons-material/Person";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 
 function AIChat() {
-  const [prompt, setPrompt] = useState("");
-  const [response, setResponse] = useState("");
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
 
+  const { prompt, response, loading } = useSelector((state) => state.ai);
+  console.log("Redux AI State:", { prompt, response, loading });
   const askAI = async () => {
     if (!prompt.trim()) return;
 
     try {
-      setLoading(true);
-      setResponse("");
+      dispatch(setLoading(true));
+      dispatch(setResponse(""));
 
       const res = await api.post("/ai/chat", {
         message: prompt,
       });
-      console.log("AI Response:", res.data);
-      setResponse(
-        res.data.response || res.data.answer || "No response received.",
-      );
 
-      setPrompt("");
+      console.log("AI Response:", res.data);
+      alert(JSON.stringify(res.data));
+
+      dispatch(setResponse(res.data.response));
+
+      dispatch(setPrompt(""));
     } catch (error) {
       console.error(error);
-      setResponse("Unable to connect to AI.");
+      dispatch(setResponse("Unable to connect to AI."));
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -163,7 +166,7 @@ function AIChat() {
         label="Describe the interaction..."
         placeholder="Example: Met Dr. Kumar to discuss the new diabetes treatment..."
         value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
+        onChange={(e) => dispatch(setPrompt(e.target.value))}
       />
 
       <Button

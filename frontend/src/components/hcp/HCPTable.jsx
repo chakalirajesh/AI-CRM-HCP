@@ -23,8 +23,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditHCPDialog from "./EditHCPDialog";
 import DeleteHCPDialog from "./DeleteHCPDialog";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setHCPs } from "../../redux/hcpSlice";
+
 function HCPTable() {
-  const [hcps, setHcps] = useState([]);
+  const dispatch = useDispatch();
+
+  const hcps = useSelector((state) => state.hcp.hcps);
+
   const [search, setSearch] = useState("");
 
   const [editOpen, setEditOpen] = useState(false);
@@ -40,25 +46,22 @@ function HCPTable() {
   const loadHCPs = async () => {
     try {
       const response = await api.get("/hcp/");
-      setHcps(response.data);
+      dispatch(setHCPs(response.data));
     } catch (error) {
       console.error(error);
     }
   };
 
-  // Edit
   const handleEdit = (hcp) => {
     setSelectedHCP(hcp);
     setEditOpen(true);
   };
 
-  // Open Delete Dialog
   const openDeleteDialog = (hcp) => {
     setDeleteHCP(hcp);
     setDeleteOpen(true);
   };
 
-  // Delete
   const handleDelete = async () => {
     try {
       await api.delete(`/hcp/${deleteHCP.id}`);
@@ -73,10 +76,8 @@ function HCPTable() {
     }
   };
 
-  // View
   const handleView = (hcp) => {
     console.log("View HCP:", hcp);
-    // Next we'll open HCPProfileDrawer here.
   };
 
   const filtered = hcps.filter((hcp) =>
@@ -85,12 +86,7 @@ function HCPTable() {
 
   return (
     <>
-      <Paper
-        sx={{
-          p: 3,
-          borderRadius: 3,
-        }}
-      >
+      <Paper sx={{ p: 3, borderRadius: 3 }}>
         <Box
           display="flex"
           justifyContent="space-between"
@@ -118,19 +114,15 @@ function HCPTable() {
               <TableCell>
                 <b>Name</b>
               </TableCell>
-
               <TableCell>
                 <b>Specialization</b>
               </TableCell>
-
               <TableCell>
                 <b>Hospital</b>
               </TableCell>
-
               <TableCell>
                 <b>Status</b>
               </TableCell>
-
               <TableCell align="center">
                 <b>Actions</b>
               </TableCell>
@@ -141,9 +133,7 @@ function HCPTable() {
             {filtered.map((hcp) => (
               <TableRow key={hcp.id} hover>
                 <TableCell>{hcp.name}</TableCell>
-
                 <TableCell>{hcp.specialization}</TableCell>
-
                 <TableCell>{hcp.hospital}</TableCell>
 
                 <TableCell>

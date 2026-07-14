@@ -5,38 +5,44 @@ import ForumIcon from "@mui/icons-material/Forum";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import CloudDoneIcon from "@mui/icons-material/CloudDone";
 
-const cards = [
-  {
-    title: "Total HCPs",
-    value: "2",
-    subtitle: "+1 this week",
-    color: "#2563EB",
-    icon: <PeopleAltIcon sx={{ fontSize: 34 }} />,
-  },
-  {
-    title: "Interactions",
-    value: "10",
-    subtitle: "+4 today",
-    color: "#16A34A",
-    icon: <ForumIcon sx={{ fontSize: 34 }} />,
-  },
-  {
-    title: "AI Status",
-    value: "Online",
-    subtitle: "Groq Connected",
-    color: "#7C3AED",
-    icon: <SmartToyIcon sx={{ fontSize: 34 }} />,
-  },
-  {
-    title: "Backend",
-    value: "Connected",
-    subtitle: "FastAPI Running",
-    color: "#EA580C",
-    icon: <CloudDoneIcon sx={{ fontSize: 34 }} />,
-  },
-];
+import { useSelector } from "react-redux";
 
 function DashboardCards() {
+  const { totalHCPs, totalInteractions } = useSelector(
+    (state) => state.dashboard,
+  );
+
+  const cards = [
+    {
+      title: "Total HCPs",
+      value: totalHCPs,
+      subtitle: "Healthcare Professionals",
+      color: "#2563EB",
+      icon: <PeopleAltIcon sx={{ fontSize: 34 }} />,
+    },
+    {
+      title: "Interactions",
+      value: totalInteractions,
+      subtitle: "Total Logged",
+      color: "#16A34A",
+      icon: <ForumIcon sx={{ fontSize: 34 }} />,
+    },
+    {
+      title: "AI Status",
+      value: "Online",
+      subtitle: "Groq Connected",
+      color: "#7C3AED",
+      icon: <SmartToyIcon sx={{ fontSize: 34 }} />,
+    },
+    {
+      title: "Backend",
+      value: "Connected",
+      subtitle: "FastAPI Running",
+      color: "#EA580C",
+      icon: <CloudDoneIcon sx={{ fontSize: 34 }} />,
+    },
+  ];
+
   return (
     <Grid container spacing={3}>
       {cards.map((card) => (
@@ -48,7 +54,6 @@ function DashboardCards() {
               borderRadius: 4,
               border: "1px solid #E5E7EB",
               transition: ".25s",
-
               "&:hover": {
                 transform: "translateY(-5px)",
                 boxShadow: "0 10px 25px rgba(0,0,0,.08)",

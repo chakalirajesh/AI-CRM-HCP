@@ -22,8 +22,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 import HCPProfileDrawer from "./hcp/HCPProfileDrawer";
 
+import { useDispatch, useSelector } from "react-redux";
+import { setInteractions } from "../redux/interactionSlice";
+
 function InteractionHistory() {
-  const [interactions, setInteractions] = useState([]);
+  const dispatch = useDispatch();
+
+  const interactions = useSelector((state) => state.interaction.interactions);
+
   const [search, setSearch] = useState("");
 
   const [selectedHCP, setSelectedHCP] = useState(null);
@@ -36,7 +42,7 @@ function InteractionHistory() {
   const loadInteractions = async () => {
     try {
       const response = await api.get("/interaction/");
-      setInteractions(response.data);
+      dispatch(setInteractions(response.data));
     } catch (error) {
       console.error(error);
     }

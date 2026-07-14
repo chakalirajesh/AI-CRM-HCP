@@ -14,9 +14,11 @@ import {
 
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { useAI } from "../../context/AIContext";
 
 function AISection() {
   const [prompt, setPrompt] = useState("");
+  const { setAIData } = useAI();
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,11 +32,10 @@ function AISection() {
         message: prompt,
       });
 
-      setSummary(
-        response.data.summary ||
-          response.data.response ||
-          "AI Summary Generated Successfully.",
-      );
+      setAIData(response.data.response);
+      console.log("AISection:", response.data.response);
+
+      setSummary(response.data.response.summary);
     } catch (error) {
       console.error(error);
       setSummary("Unable to generate AI summary.");
@@ -92,7 +93,7 @@ function AISection() {
       {/* Prompt */}
 
       <Typography variant="h6" fontWeight={700} gutterBottom>
-        Describe Interaction
+        Chat with AI Assistant
       </Typography>
 
       <TextField
@@ -122,7 +123,7 @@ function AISection() {
           fontSize: 16,
         }}
       >
-        Generate AI Summary
+        Send to AI
       </Button>
     </Box>
   );

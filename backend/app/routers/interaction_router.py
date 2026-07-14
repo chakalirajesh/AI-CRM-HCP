@@ -20,11 +20,12 @@ def create_interaction(
     db: Session = Depends(get_db)
 ):
     new_interaction = Interaction(
-        hcp_id=interaction.hcp_id,
-        interaction_type=interaction.interaction_type,
-        notes=interaction.notes
+    hcp_id=interaction.hcp_id,
+    interaction_type=interaction.interaction_type,
+    notes=interaction.notes,
+    ai_summary="",
+    next_action=""
     )
-
     db.add(new_interaction)
     db.commit()
     db.refresh(new_interaction)
@@ -58,5 +59,6 @@ def edit_interaction(
     db.commit()
 
     return {
-        "message": "Interaction Updated Successfully"
-    }
+    "message": "Interaction Updated Successfully",
+    "data": record
+}

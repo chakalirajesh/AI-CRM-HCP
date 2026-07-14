@@ -8,7 +8,7 @@ import {
   Divider,
   Chip,
 } from "@mui/material";
-
+import { Radio, RadioGroup, FormControlLabel, FormLabel } from "@mui/material";
 import EventIcon from "@mui/icons-material/Event";
 import SaveIcon from "@mui/icons-material/Save";
 
@@ -20,9 +20,17 @@ import { getHCPs } from "../../services/hcpService";
 import VoiceNote from "../VoiceNote";
 import MaterialsSection from "../MaterialsSection";
 
+import { useAI } from "../../context/AIContext";
+
 function FormSection() {
   const [hcps, setHcps] = useState([]);
 
+  const [sentiment, setSentiment] = useState("Neutral");
+  const [outcomes, setOutcomes] = useState("");
+  const [followUpActions, setFollowUpActions] = useState("");
+  const [aiFollowUps, setAiFollowUps] = useState([]);
+
+  const { aiData } = useAI();
   const [hcpId, setHcpId] = useState("");
   const [interactionType, setInteractionType] = useState("Meeting");
   const [interactionDate, setInteractionDate] = useState("");
@@ -33,7 +41,59 @@ function FormSection() {
   useEffect(() => {
     loadHCPs();
   }, []);
+  useEffect(() => {
+    if (!aiData) return;
+    const aiName = (aiData?.hcp_name || "")
+      .toLowerCase()
+      .replace("dr.", "")
+      .replace("dr", "")
+      .trim();
 
+    const aiWords = aiName.split(" ");
+
+    const hcp = hcps.find((item) => {
+      if (!aiName) return false;
+
+      const dbName = item.name
+        .toLowerCase()
+        .replace("dr.", "")
+        .replace("dr", "")
+        .trim();
+
+      return aiWords.some((word) => dbName.includes(word));
+    });
+
+    if (hcp) {
+      setHcpId(hcp.id);
+    }
+
+    if (aiData.interaction_type) {
+      setInteractionType(aiData.interaction_type);
+    }
+
+    if (aiData.date && /^\d{4}-\d{2}-\d{2}$/.test(aiData.date)) {
+      setInteractionDate(aiData.date);
+    }
+
+    if (aiData.time && /^\d{2}:\d{2}$/.test(aiData.time)) {
+      setInteractionTime(aiData.time);
+    }
+
+    if (aiData.attendees) {
+      setAttendees(aiData.attendees);
+    } else if (hcp) {
+      setAttendees(hcp.name);
+    }
+
+    if (aiData.notes) {
+      setNotes(aiData.notes);
+    }
+    if (aiData.follow_up) {
+      setAiFollowUps(
+        aiData.follow_up.split("\n").filter((item) => item.trim() !== ""),
+      );
+    }
+  }, [aiData, hcps]);
   const loadHCPs = async () => {
     try {
       const data = await getHCPs();
@@ -44,7 +104,7 @@ function FormSection() {
   };
 
   const saveInteraction = async () => {
-    if (!hcpId || !notes) {
+    if (!hcpId || !interactionType || !interactionDate || !notes.trim()) {
       alert("Please fill all required fields.");
       return;
     }
@@ -53,7 +113,9 @@ function FormSection() {
       await api.post("/interaction/", {
         hcp_id: Number(hcpId),
         interaction_type: interactionType,
-        notes: notes,
+        notes,
+        ai_summary: aiData?.summary,
+        next_action: aiData?.next_action,
       });
 
       alert("Interaction Saved Successfully");
@@ -215,6 +277,172 @@ function FormSection() {
           </Typography>
 
           <MaterialsSection />
+        </Grid>
+        <Grid item xs={12}>
+          <Divider sx={{ my: 3 }} />
+
+          <FormLabel
+            sx={{
+              fontWeight: 700,
+              mb: 2,
+              display: "block",
+            }}
+          >
+            Observed / Inferred HCP Sentiment
+          </FormLabel>
+
+          <RadioGroup
+            row
+            value={sentiment}
+            onChange={(e) => setSentiment(e.target.value)}
+          >
+            <FormControlLabel
+              value="Positive"
+              control={<Radio />}
+              label="Positive"
+            />
+
+            <FormControlLabel
+              value="Neutral"
+              control={<Radio />}
+              label="Neutral"
+            />
+
+            <FormControlLabel
+              value="Negative"
+              control={<Radio />}
+              label="Negative"
+            />
+          </RadioGroup>
+        </Grid>
+        <Grid item xs={12}>
+          <FormLabel
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+              display: "block",
+            }}
+          >
+            Outcomes
+          </FormLabel>
+
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Key outcomes or agreements..."
+            value={outcomes}
+            onChange={(e) => setOutcomes(e.target.value)}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <FormLabel
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+              display: "block",
+            }}
+          >
+            Follow-up Actions
+          </FormLabel>
+
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Enter follow-up actions..."
+            value={followUpActions}
+            onChange={(e) => setFollowUpActions(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            AI Suggested Follow-ups
+          </Typography>
+
+          <Box
+            sx={{
+              bgcolor: "#F8FAFC",
+              border: "1px solid #E5E7EB",
+              borderRadius: 2,
+              p: 2,
+            }}
+          >
+            {aiFollowUps.length > 0 ? (
+              aiFollowUps.map((item, index) => (
+                <Typography key={index} sx={{ mb: 1 }}>
+                  • {item}
+                </Typography>
+              ))
+            ) : (
+              <Typography color="text.secondary">
+                No AI follow-up suggestions available.
+              </Typography>
+            )}
+          </Box>
+        </Grid>
+        <Grid item xs={12}>
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h6" fontWeight={700} gutterBottom>
+            AI Insights
+          </Typography>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "#F8FAFC",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography fontWeight={700}>Interaction Summary</Typography>
+
+                <Typography color="text.secondary">
+                  {aiData?.summary || "No summary generated"}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "#F8FAFC",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography fontWeight={700}>Next Best Action</Typography>
+
+                <Typography color="text.secondary">
+                  {aiData?.next_action || "No recommendation"}
+                </Typography>
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "#F8FAFC",
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 2,
+                }}
+              >
+                <Typography fontWeight={700}>Follow-up</Typography>
+
+                <Typography color="text.secondary">
+                  {aiData?.follow_up || "No follow-up"}
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
         </Grid>
 
         {/* Save Button */}
