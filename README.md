@@ -108,7 +108,7 @@ ai-crm-hcp
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/AI-CRM-HCP.git
+git clone https://github.com/chakalirajesh/AI-CRM-HCP.git
 ```
 
 ---
